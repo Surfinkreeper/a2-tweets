@@ -35,6 +35,28 @@ function parseTweets(runkeeper_tweets) {
 	document.getElementById('numberTweets').innerText = tweet_array.length;
 	document.getElementById('firstDate').innerText = earliest_time.toLocaleDateString('en-US', options)
 	document.getElementById('lastDate').innerText = latest_time.toLocaleDateString('en-US', options)
+	categorizeTweets(tweet_array)
+}
+
+function categorizeTweets(tweet_array) {
+	let completedCount = 0;
+	let liveCount = 0;
+	let achievementCount = 0;
+	let miscCount = 0;
+
+	for( let i = 0; i < tweet_array.length; i++ ) {
+		if (tweet_array[i].source == "achievement") {
+			achievementCount++;
+		}
+		else if (tweet_array[i].source == "live_event") {
+			liveCount++;
+		}
+		else if (tweet_array[i].source == "completed_event") {
+			completedCount++;
+		}
+	}
+
+	document.getElementById
 }
 
 //Wait for the DOM to load
