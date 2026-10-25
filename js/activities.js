@@ -1,4 +1,5 @@
 function parseTweets(runkeeper_tweets) {
+
 	//Do not proceed if no tweets loaded
 	if(runkeeper_tweets === undefined) {
 		window.alert('No tweets returned');
@@ -49,9 +50,9 @@ function parseTweets(runkeeper_tweets) {
 		}
 	}
 
-	let topThree = sortedEntries.slice(0, 3);
+	let topThreeNames = [sortedEntries[0][0], sortedEntries[1][0], sortedEntries[2][0]];
 	let topThreeTweets = completedTweets.filter(function(tweet) {
-		return topThree.includes(tweet.activityType);
+		return topThreeNames.includes(tweet.activityType);
 	});
 	let weekdayTweets = topThreeTweets.filter(function(tweet) {
 		let day = tweet.time.getDay();
@@ -70,6 +71,36 @@ function parseTweets(runkeeper_tweets) {
 	document.getElementById('longestActivityType').innerText = longestType;
 	document.getElementById('shortestActivityType').innerText = shortestType;
 
+	// Streaming data to store pointData and meanData
+	let pointData = topThreeTweets.map(function(tweet) {
+		return {
+			day_number: tweet.day_number,
+			activityType: tweet.activityType,
+			distance: tweet.distance
+		};
+	});
+
+	let meanData = [];
+	for (let name of topThreeNames) {
+		for (let day = 0; day < 7; day++) {
+			let matches = pointData.filter(function(p) {
+				return p.activityType === name && p.day_number === day;
+			});
+
+			if (matches.length > 0) {
+				let total = 0;
+				for (let m of matches) {
+					total += m.distance;
+				}
+				meanData.push({
+					day_number: day,
+					activityType: name,
+					distance: total / matches.length
+				});
+			}
+		}
+	}
+
 	//TODO: create a new array or manipulate tweet_array to create a graph of the number of tweets containing each type of activity.
 
 
@@ -82,12 +113,14 @@ function parseTweets(runkeeper_tweets) {
 	"mark": "bar",
 	"encoding": {
 		x: {
-		field: "activityType",
-		type: "nominal"
+			field: "activityType",
+			type: "nominal",
+			title: "Activity",
+			sort: "-y"
 		},
 		y: {
-		aggregate: "count",
-		type: "quantitative"
+			aggregate: "count",
+			type: "quantitative"
 		}
 	}
 	};
@@ -95,25 +128,23 @@ function parseTweets(runkeeper_tweets) {
 
 	//TODO: create the visualizations which group the three most-tweeted activities by the day of the week.
 	//Use those visualizations to answer the questions about which activities tended to be longest and when.
-	distance_by_day = {
-	"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-	"description": "A graph of the distances of the top 3 most logged activities per day",
-	"data": {
-		"values": completedTweets
-	},
-	"mark": "bar",
-	"encoding": {
-		x: {
-		field: "activityType",
-		type: "nominal"
-		},
-		y: {
-		aggregate: "count",
-		type: "quantitative"
+
+	// Button graph swapping
+	let showingMeans = false;
+
+	drawDistanceChart(pointData, "Distance traveled");
+
+	document.getElementById('aggregate').addEventListener('click', function() {
+		if (showingMeans) {
+			drawDistanceChart(pointData, "Distance traveled");
+			this.innerText = 'Show means';
+			showingMeans = false;
+		} else {
+			drawDistanceChart(meanData, "Mean distance traveled");
+			this.innerText = 'Show all activities';
+			showingMeans = true;
 		}
-	}
-	};
-	vegaEmbed('#distanceVis', distance_by_day, {actions:false});
+	});
 }
 
 //Wait for the DOM to load
@@ -134,4 +165,34 @@ function averageDistance(tweets) {
 		return 0;
 	}
 	return total / count;
+}
+
+function drawDistanceChart(data, yTitle) {
+	let distance_by_day = {
+		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+		"description": "Distances of the top 3 most logged activities per day",
+		"data": { "values": data },
+		"mark": "point",
+		"encoding": {
+			x: {
+				field: "day_number",
+				type: "ordinal",
+				title: "Day of the week",
+				axis: {
+					grid: true,
+					labelExpr: "['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][datum.value]"
+				}
+			},
+			y: {
+				field: "distance",
+				type: "quantitative",
+				title: yTitle
+			},
+			color: {
+				field: "activityType",
+				type: "nominal"
+			}
+		}
+	};
+	vegaEmbed('#distanceVis', distance_by_day, {actions: false});
 }

@@ -115,6 +115,32 @@ class Tweet {
         return this.firstWord(afterNumber.substring(unitEnd + 1)).toLowerCase();
     }
 
+    get day():string {
+        let day = this.time.getDay();
+        switch (day) {
+            case 0:
+                return "Sunday";
+            case 1:
+                return "Monday";
+            case 2:
+                return "Tuesday";
+            case 3:
+                return "Wednesday";
+            case 4:
+                return "Thursday";
+            case 5:
+                return "Friday";
+            case 6:
+                return "Saturday";
+            default:
+                return "Unknown";
+        }
+    }
+
+    get day_number():number {
+        return this.time.getDay();
+    }
+
     get distance():number {
         if (this.source != 'completed_event') {
             return 0;
@@ -142,6 +168,22 @@ class Tweet {
 
     getHTMLTableRow(rowNumber:number):string {
         //TODO: return a table row which summarizes the tweet with a clickable link to the RunKeeper activity
-        return "<tr></tr>";
+        let text = this.text;
+        let link_start = text.search("https://t.co/")
+
+         if (link_start !== -1) {
+            let link_end = text.indexOf(" ", link_start);
+
+            // If there is no space
+            if (link_end === -1) {
+                link_end = text.length;
+            }
+
+            let link = text.substring(link_start, link_end);
+
+            text = text.substring(0, link_start) + '<a href="' + link + '" target="_blank">' + link + '</a>' + text.substring(link_end);
+        }
+        
+        return "<tr><td>" + rowNumber + "</td><td>" + this.activityType + "</td><td>" + text + "</td></tr>";
     }
 }
