@@ -43,6 +43,7 @@ function categorizeTweets(tweet_array) {
 	let liveCount = 0;
 	let achievementCount = 0;
 	let miscCount = 0;
+	let writtenCount = 0;
 
 	for( let i = 0; i < tweet_array.length; i++ ) {
 		if (tweet_array[i].source == "achievement") {
@@ -53,10 +54,37 @@ function categorizeTweets(tweet_array) {
 		}
 		else if (tweet_array[i].source == "completed_event") {
 			completedCount++;
+			if (tweet_array[i].written) {
+				writtenCount++;
+			}
+		}
+		else {
+			miscCount++;
 		}
 	}
 
-	document.getElementById
+	let completedCountPct = String(math.round((completedCount/tweet_array.length)*100, 2)) + "%";
+	let liveCountPct = String(math.round((liveCount/tweet_array.length)*100, 2)) + "%";
+	let achievementCountPct = String(math.round((achievementCount/tweet_array.length)*100, 2)) + "%";
+	let miscCountPct = String(math.round((miscCount/tweet_array.length)*100, 2)) + "%";
+	let writtenCountPct = String(math.round((writtenCount/completedCount)*100, 2)) + "%";
+
+
+	document.getElementsByClassName("completedEvents")[0].innerText = completedCount;
+	document.getElementsByClassName("liveEvents")[0].innerText = liveCount;
+	document.getElementsByClassName("achievements")[0].innerText = achievementCount;
+	document.getElementsByClassName("miscellaneous")[0].innerText = miscCount;
+
+	document.getElementsByClassName("completedEventsPct")[0].innerText = completedCountPct;
+	document.getElementsByClassName("liveEventsPct")[0].innerText = liveCountPct;
+	document.getElementsByClassName("achievementsPct")[0].innerText = achievementCountPct;
+	document.getElementsByClassName("miscellaneousPct")[0].innerText = miscCountPct;
+
+	document.getElementsByClassName("completedEvents")[1].innerText = completedCount;
+	document.getElementsByClassName("written")[0].innerText = writtenCount;
+	document.getElementsByClassName("writtenPct")[0].innerText = writtenCountPct;
+
+	
 }
 
 //Wait for the DOM to load
